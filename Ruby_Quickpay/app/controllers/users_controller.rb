@@ -8,11 +8,9 @@ class UsersController < ApplicationController
     def create
       @user = User.new(user_params)
       if @user.save
-        Rails.logger.debug "🛠 Usuario creado con ID: #{@user.id} y rol: #{@user.role}"
-        token = JsonWebToken.encode(user_id: @user.id, role: @user.role)  # ✅ Generar token solo si @user.role no es nil
+        token = JsonWebToken.encode(user_id: @user.id, role: @user.role)
         render json: { token: token, user: @user }, status: :created
       else
-        Rails.logger.debug "❌ Error en la creación de usuario: #{@user.errors.full_messages}"
         render json: { errors: @user.errors.full_messages }, status: :unprocessable_entity
       end
     end
@@ -39,43 +37,33 @@ class UsersController < ApplicationController
   
     # PATCH/PUT /users/:id
     def update
-      Rails.logger.debug "🛠 Intentando actualizar usuario con ID: #{@user.id}"
-      Rails.logger.debug "🔹 Usuario autenticado: #{@current_user.inspect}"
-    
+
       if @current_user.id == @user.id || @current_user.admin?
         if @user.update(user_update_params)
-          Rails.logger.debug "Usuario actualizado correctamente"
           render json: { message: "User updated successfully", user: @user }, status: :ok
         else
-          Rails.logger.debug "Error en la actualización: #{@user.errors.full_messages}"
           render json: { errors: @user.errors.full_messages }, status: :unprocessable_entity
         end
       else
-        Rails.logger.debug "Usuario no autorizado para esta operación"
         render json: { error: "Unauthorized" }, status: :unauthorized
       end
     rescue StandardError => e
-      Rails.logger.error "Error inesperado en update: #{e.message}"
-      render json: { error: e.message }, status: :internal_server_error  # 🔹 Captura errores inesperados
+      render json: { error: e.message }, status: :internal_server_error
     end
     
     
   
     # DELETE /users/:id
     def destroy
-      Rails.logger.debug "🛠 Intentando eliminar usuario con ID: #{@user.id}"
-      Rails.logger.debug "🔹 Usuario autenticado: #{@current_user.inspect}"
+  
   
       if @current_user.id == @user.id || @current_user.admin?
         @user.destroy
-        Rails.logger.debug "✅ Usuario eliminado correctamente"
         head :no_content
       else
-        Rails.logger.debug "⛔ Usuario no autorizado para eliminar esta cuenta"
         render json: { error: "Unauthorized" }, status: :unauthorized
       end
     rescue StandardError => e
-      Rails.logger.error "Error inesperado en destroy: #{e.message}"
       render json: { error: e.message }, status: :internal_server_error
     end
   
