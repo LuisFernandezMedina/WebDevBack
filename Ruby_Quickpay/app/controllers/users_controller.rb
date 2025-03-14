@@ -1,5 +1,5 @@
 class UsersController < ApplicationController
-    before_action :authorize_request, except: :create
+    skip_before_action :verify_authenticity_token
     before_action :set_user, only: %i[show update destroy]
   
     # POST /signup
@@ -17,7 +17,7 @@ class UsersController < ApplicationController
         @user = User.find_by(email: params[:email])
     
         if @user&.authenticate(params[:password])
-            token = JsonWebToken.encode(user_id: @user.id)
+            token = JsonWebToken.encode(user_id: @user.id, role: @user.role)
             render json: { token: token, user: @user }, status: :ok
         else
             render json: { error: 'Invalid email or password' }, status: :unauthorized
@@ -31,12 +31,27 @@ class UsersController < ApplicationController
   
     # PATCH/PUT /users/:id
     def update
-      if @user.update(user_params)
-        render json: @user
+      Rails.logger.debug "🛠 Intentando actualizar usuario con ID: #{@user.id}"
+      Rails.logger.debug "🔹 Usuario autenticado: #{@current_user.inspect}"
+    
+      if @current_user.id == @user.id || @current_user.admin?  # ✅ Permitir si es su perfil o es admin
+        if @user.update(user_update_params)
+          Rails.logger.debug "✅ Usuario actualizado correctamente"
+          render json: { message: "User updated successfully", user: @user }, status: :ok
+        else
+          Rails.logger.debug "❌ Error en la actualización: #{@user.errors.full_messages}"
+          render json: { errors: @user.errors.full_messages }, status: :unprocessable_entity
+        end
       else
-        render json: { errors: @user.errors.full_messages }, status: :unprocessable_entity
+        Rails.logger.debug "⛔ Usuario no autorizado para esta operación"
+        render json: { error: "Unauthorized" }, status: :unauthorized
       end
+    rescue StandardError => e
+      Rails.logger.error "🔥 Error inesperado en update: #{e.message}"
+      render json: { error: e.message }, status: :internal_server_error  # 🔹 Captura errores inesperados
     end
+    
+    
   
     # DELETE /users/:id
     def destroy
@@ -53,7 +68,12 @@ class UsersController < ApplicationController
     end
   
     def user_params
-      params.permit(:name, :email, :password, :credit_card_number, :cvv, :cardholder_name, :role)
+      params.permit(:name, :password)
     end
+    
+    def user_update_params
+      params.permit(:name, :password)
+    end
+    
   end
   
