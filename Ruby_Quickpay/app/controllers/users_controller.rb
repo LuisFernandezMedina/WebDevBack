@@ -14,9 +14,6 @@ class UsersController < ApplicationController
         render json: { errors: @user.errors.full_messages }, status: :unprocessable_entity
       end
     end
-    
-    
-    
 
     # POST /login
     def login
@@ -29,7 +26,20 @@ class UsersController < ApplicationController
             render json: { error: 'Invalid email or password' }, status: :unauthorized
         end
     end
-  
+
+      # POST /users/request_money
+    def request_money
+      card_response = HTTParty.get("http://localhost:3001/payment_cards", query: { card_number: params[:card_number], cardholder_name: params[:cardholder_name], cvv: params[:cvv] })
+      
+      if card_response.code == 200
+        amount = params[:amount].to_f
+        @current_user.update(balance: @current_user.balance + amount)
+        render json: { message: 'Money added successfully', new_balance: @current_user.balance }, status: :ok
+      else
+        render json: { error: 'Card validation failed' }, status: :unprocessable_entity
+      end
+    end
+    
     # GET /users/:id
     def show
       render json: @user
@@ -55,8 +65,7 @@ class UsersController < ApplicationController
   
     # DELETE /users/:id
     def destroy
-  
-  
+
       if @current_user.id == @user.id || @current_user.admin?
         @user.destroy
         head :no_content

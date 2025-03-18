@@ -3,12 +3,14 @@ Rails.application.routes.draw do
   Rails.application.routes.draw do
     post '/signup', to: 'users#create'
     post '/login', to: 'users#login'
+    post '/users/request_money', to: 'users#request_money'
     
     resources :users, only: [:show, :update, :destroy] do
       collection do
         post 'login'
       end
     end
+    resources :payment_cards, only: %i[index show create update destroy]
   end
   
     # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
