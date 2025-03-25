@@ -11,9 +11,8 @@ default: &default
   encoding: unicode
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
   username: postgres
-  password: <%= ENV["POSTGRES_PASSWORD"] || "valdecaleros" %>
+  password: <%= ENV["POSTGRES_PASSWORD"] || "Aa123456&" %>
   host: <%= ENV.fetch("DB_HOST") { "127.0.0.1" } %>
-
 development:
   <<: *default
   database: ruby_quickpay_development

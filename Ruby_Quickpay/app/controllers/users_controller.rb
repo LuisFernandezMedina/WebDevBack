@@ -90,12 +90,7 @@ class UsersController < ApplicationController
       render json: { error: e.message }, status: :internal_server_error
     end
 
-    rescue ActiveRecord::RecordNotFound
-      render json: { error: "Usuario no encontrado" }, status: :unauthorized
-  
-    rescue JWT::DecodeError
-      render json: { error: "Token inválido o expirado" }, status: :unauthorized
-  
+
     private
   
     def set_user
