@@ -11,7 +11,7 @@ default: &default
   encoding: unicode
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
   username: postgres
-  password: <%= ENV["POSTGRES_PASSWORD"] || "Aa123456&" %>
+  password: <%= ENV["POSTGRES_PASSWORD"] || "valdecaleros" %>
   host: <%= ENV.fetch("DB_HOST") { "127.0.0.1" } %>
 
 development:

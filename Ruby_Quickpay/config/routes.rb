@@ -1,17 +1,13 @@
 Rails.application.routes.draw do
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
-  Rails.application.routes.draw do
-    post '/signup', to: 'users#create'
-    post '/login', to: 'users#login'
-    post '/users/request_money', to: 'users#request_money'
+  post '/signup', to: 'users#create'
+  post '/login', to: 'users#login'
+  post '/users/request_money', to: 'users#request_money'
+  get '/profile', to: 'users#show'
+  get 'users/email/:email', to: 'users#show_by_email'
     
-    resources :users, only: [:show, :update, :destroy] do
-      collection do
-        post 'login'
-      end
-    end
-    resources :payment_cards, only: %i[index show create update destroy]
-  end
+  resources :users, only: [:show, :update, :destroy]
+  resources :payment_cards, only: %i[index show create update destroy]
   
     # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.

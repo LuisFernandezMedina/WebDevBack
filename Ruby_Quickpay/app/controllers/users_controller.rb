@@ -1,9 +1,29 @@
 class UsersController < ApplicationController
   skip_before_action :verify_authenticity_token
-  skip_before_action :authorize_request, only: [:create, :login]  # 🔹 Permite registro y login sin autenticación
+  skip_before_action :authorize_request, only: [:create, :login, :show_by_email]  # 🔹 Permite registro y login sin autenticación
+  
+  Rails.application.config.filter_parameters -= [:email]
+
 
   before_action :set_user, only: %i[show update destroy]
   
+    def show_by_email
+      Rails.logger.debug "Email recibido: #{email}"
+      email = CGI.unescape(params[:email])
+    
+      # 🔥 FORZAMOS A LOGUEAR EL EMAIL PARA VER SI LLEGA BIEN
+      Rails.logger.debug "Email recibido: #{email}"
+    
+      user = User.find_by(email: email)
+    
+      if user
+        render json: user
+      else
+        render json: { error: 'Usuario no encontrado' }, status: :not_found
+      end
+    end
+  
+
     # POST /signup
     def create
       @user = User.new(user_params)
@@ -17,14 +37,14 @@ class UsersController < ApplicationController
 
     # POST /login
     def login
-        @user = User.find_by(email: params[:email])
+      @user = User.find_by(email: params[:email])
     
-        if @user&.authenticate(params[:password])
-            token = JsonWebToken.encode(user_id: @user.id, role: @user.role)
-            render json: { token: token, user: @user }, status: :ok
-        else
-            render json: { error: 'Invalid email or password' }, status: :unauthorized
-        end
+      if @user&.authenticate(params[:password])
+        token = JsonWebToken.encode(user_id: @user.id, role: @user.role)
+        render json: { token: token, user: @user.slice(:id, :name, :email, :balance, :role) }, status: :ok
+      else
+        render json: { error: 'Correo o contraseña inválidos' }, status: :unauthorized
+      end
     end
 
       # POST /users/request_money
@@ -42,23 +62,16 @@ class UsersController < ApplicationController
     
     # GET /users/:id
     def show
-      render json: @user
+      render json: @current_user.slice(:id, :name, :email, :balance, :role)
     end
   
     # PATCH/PUT /users/:id
     def update
-
-      if @current_user.id == @user.id || @current_user.admin?
-        if @user.update(user_update_params)
-          render json: { message: "User updated successfully", user: @user }, status: :ok
-        else
-          render json: { errors: @user.errors.full_messages }, status: :unprocessable_entity
-        end
+      if @current_user.update(user_update_params)
+        render json: { message: "Perfil actualizado", user: @current_user }, status: :ok
       else
-        render json: { error: "Unauthorized" }, status: :unauthorized
+        render json: { errors: @current_user.errors.full_messages }, status: :unprocessable_entity
       end
-    rescue StandardError => e
-      render json: { error: e.message }, status: :internal_server_error
     end
     
     
@@ -72,9 +85,16 @@ class UsersController < ApplicationController
       else
         render json: { error: "Unauthorized" }, status: :unauthorized
       end
+    
     rescue StandardError => e
       render json: { error: e.message }, status: :internal_server_error
     end
+
+    rescue ActiveRecord::RecordNotFound
+      render json: { error: "Usuario no encontrado" }, status: :unauthorized
+  
+    rescue JWT::DecodeError
+      render json: { error: "Token inválido o expirado" }, status: :unauthorized
   
     private
   
@@ -93,4 +113,3 @@ class UsersController < ApplicationController
     end
     
   end
-  
