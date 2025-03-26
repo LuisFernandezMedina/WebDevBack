@@ -90,6 +90,22 @@ class UsersController < ApplicationController
       render json: { error: e.message }, status: :internal_server_error
     end
 
+    # PATCH/PUT /users/:id
+    def update
+      if @current_user.update(user_update_params)
+        # Si se proporciona una contraseña nueva, se asegura que se hashee correctamente
+        if params[:password].present?
+          @current_user.password = params[:password]
+          unless @current_user.save
+            return render json: { errors: @current_user.errors.full_messages }, status: :unprocessable_entity
+          end
+        end
+
+        render json: { message: "Perfil actualizado", user: @current_user.slice(:id, :name, :email, :balance, :role) }, status: :ok
+      else
+        render json: { errors: @current_user.errors.full_messages }, status: :unprocessable_entity
+      end
+    end
 
     private
   
