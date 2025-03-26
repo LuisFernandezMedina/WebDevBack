@@ -11,7 +11,6 @@ class UsersController < ApplicationController
       Rails.logger.debug "Email recibido: #{email}"
       email = CGI.unescape(params[:email])
     
-      # 🔥 FORZAMOS A LOGUEAR EL EMAIL PARA VER SI LLEGA BIEN
       Rails.logger.debug "Email recibido: #{email}"
     
       user = User.find_by(email: email)
@@ -23,7 +22,6 @@ class UsersController < ApplicationController
       end
     end
   
-
     # POST /signup
     def create
       @user = User.new(user_params)
@@ -73,8 +71,7 @@ class UsersController < ApplicationController
         render json: { errors: @current_user.errors.full_messages }, status: :unprocessable_entity
       end
     end
-    
-    
+        
   
     # DELETE /users/:id
     def destroy
@@ -106,6 +103,29 @@ class UsersController < ApplicationController
         render json: { errors: @current_user.errors.full_messages }, status: :unprocessable_entity
       end
     end
+
+    # PATCH /users/:id/add_balance
+    def add_balance
+      amount = params[:amount].to_f
+      if amount > 0
+        @current_user.update(balance: @current_user.balance + amount)
+        render json: { message: "Saldo añadido correctamente", new_balance: @current_user.balance }, status: :ok
+      else
+        render json: { error: "Cantidad inválida" }, status: :unprocessable_entity
+      end
+    end
+
+    # PATCH /users/:id/retire_balance
+    def retire_balance
+      amount = params[:amount].to_f
+      if amount > 0 && @current_user.balance >= amount
+        @current_user.update(balance: @current_user.balance - amount)
+        render json: { message: "Saldo retirado correctamente", new_balance: @current_user.balance }, status: :ok
+      else
+        render json: { error: "Saldo insuficiente o cantidad inválida" }, status: :unprocessable_entity
+      end
+    end
+
 
     private
   
