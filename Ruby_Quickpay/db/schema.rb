@@ -25,11 +25,14 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_27_124027) do
   end
 
   create_table "transactions", force: :cascade do |t|
-    t.bigint "user_id", null: false
-    t.decimal "amount"
+    t.bigint "sender_id", null: false
+    t.bigint "receiver_id", null: false
+    t.decimal "amount", precision: 10, scale: 2
+    t.datetime "date"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["user_id"], name: "index_transactions_on_user_id"
+    t.index ["receiver_id"], name: "index_transactions_on_receiver_id"
+    t.index ["sender_id"], name: "index_transactions_on_sender_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -43,5 +46,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_27_124027) do
     t.index ["email"], name: "index_users_on_email", unique: true
   end
 
-  add_foreign_key "transactions", "users"
+  add_foreign_key "transactions", "users", column: "receiver_id"
+  add_foreign_key "transactions", "users", column: "sender_id"
 end

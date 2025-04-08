@@ -5,7 +5,7 @@ Rails.application.routes.draw do
   get '/profile', to: 'users#show'
   get 'users/email/:email', to: 'users#show_by_email'
 
-  resources :users, only: [:show, :update, :destroy] do
+  resources :users, only: [:index, :show, :update, :destroy] do
     member do
       patch 'add_balance'
       patch 'retire_balance'
@@ -15,7 +15,7 @@ Rails.application.routes.draw do
       post 'transfer_money'
     end
   end
-
+  
   resources :payment_cards, only: %i[index show create update destroy]
 
   get "up" => "rails/health#show", as: :rails_health_check

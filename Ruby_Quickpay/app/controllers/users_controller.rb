@@ -7,6 +7,11 @@ class UsersController < ApplicationController
 
   before_action :set_user, only: %i[show update destroy]
   
+    def index
+      users = User.all.select(:id, :name, :email, :balance, :role)
+      render json: users
+    end
+  
     def show_by_email
       Rails.logger.debug "Email recibido: #{email}"
       email = CGI.unescape(params[:email])
@@ -160,6 +165,34 @@ class UsersController < ApplicationController
     rescue => e
       render json: { error: e.message }, status: :internal_server_error
     end
+    def transactions
+      user = User.find(params[:id])
+      sent = user.sent_transactions.includes(:receiver).map do |t|
+        {
+          id: t.id,
+          to: t.receiver.name,
+          to_email: t.receiver.email,
+          amount: t.amount,
+          date: t.date
+        }
+      end
+    
+      received = user.received_transactions.includes(:sender).map do |t|
+        {
+          id: t.id,
+          from: t.sender.name,
+          from_email: t.sender.email,
+          amount: t.amount,
+          date: t.date
+        }
+      end
+    
+      render json: {
+        sent: sent,
+        received: received
+      }
+    end
+    
 
 
 
@@ -179,14 +212,8 @@ class UsersController < ApplicationController
       params.permit(:name, :password)
     end
 
-    def transactions
-      sent = @user.sent_transactions
-      received = @user.received_transactions
     
-      render json: {
-        sent: sent,
-        received: received
-      }
-    end
+    
+    
     
   end
