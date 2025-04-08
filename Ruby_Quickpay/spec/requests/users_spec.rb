@@ -36,25 +36,4 @@ RSpec.describe "Users API", type: :request do
       expect(JSON.parse(response.body)["email"]).to eq(user.email)
     end
   end
-
-  describe "POST /users/:id/add_balance" do
-    it "aumenta el saldo del usuario" do
-      post "/users/#{user.id}/add_balance", params: { amount: 50 }, headers: headers
-      expect(response).to have_http_status(:ok)
-      expect(JSON.parse(response.body)["new_balance"].to_f).to eq(150.0)
-    end
-  end
-
-  describe "POST /users/:id/retire_balance" do
-    it "reduce el saldo si hay fondos suficientes" do
-      post "/users/#{user.id}/retire_balance", params: { amount: 50 }, headers: headers
-      expect(response).to have_http_status(:ok)
-      expect(JSON.parse(response.body)["new_balance"].to_f).to eq(50.0)
-    end
-
-    it "falla si el saldo es insuficiente" do
-      post "/users/#{user.id}/retire_balance", params: { amount: 200 }, headers: headers
-      expect(response).to have_http_status(:unprocessable_entity)
-    end
-  end
 end

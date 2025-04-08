@@ -126,6 +126,42 @@ class UsersController < ApplicationController
       end
     end
 
+    # POST /users/transfer_money
+    def transfer_money
+      sender = User.find_by(id: params[:sender_id])
+      receiver = User.find_by(id: params[:receiver_id])
+      amount = params[:amount].to_f
+
+      if sender.nil? || receiver.nil?
+        return render json: { error: "Usuario no encontrado" }, status: :not_found
+      end
+
+      if amount <= 0
+        return render json: { error: "Cantidad inválida" }, status: :unprocessable_entity
+      end
+
+      if sender.balance < amount
+        return render json: { error: "Saldo insuficiente" }, status: :unprocessable_entity
+      end
+
+      # Transacción atómica
+      ActiveRecord::Base.transaction do
+        sender.update!(balance: sender.balance - amount)
+        receiver.update!(balance: receiver.balance + amount)
+        Transaction.create!(
+          sender: sender,
+          receiver: receiver,
+          amount: amount,
+          date: Time.current
+        )
+      end
+
+      render json: { message: "Transferencia completada", sender_balance: sender.balance, receiver_balance: receiver.balance }, status: :ok
+    rescue => e
+      render json: { error: e.message }, status: :internal_server_error
+    end
+
+
 
     private
   
@@ -141,6 +177,16 @@ class UsersController < ApplicationController
     
     def user_update_params
       params.permit(:name, :password)
+    end
+
+    def transactions
+      sent = @user.sent_transactions
+      received = @user.received_transactions
+    
+      render json: {
+        sent: sent,
+        received: received
+      }
     end
     
   end

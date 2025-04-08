@@ -9,6 +9,10 @@ Rails.application.routes.draw do
     member do
       patch 'add_balance'
       patch 'retire_balance'
+      get 'transactions'
+    end
+    collection do
+      post 'transfer_money'
     end
   end
 
