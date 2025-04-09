@@ -4,6 +4,7 @@ Rails.application.routes.draw do
   post '/users/request_money', to: 'users#request_money'
   get '/profile', to: 'users#show'
   get 'users/email/:email', to: 'users#show_by_email'
+  get '/users/:user_id/requests', to: 'requests#index'
 
   resources :users, only: [:index, :show, :update, :destroy] do
     member do
@@ -17,6 +18,13 @@ Rails.application.routes.draw do
   end
   
   resources :payment_cards, only: %i[index show create update destroy]
+
+  resources :requests, only: [:create] do
+    member do
+      patch 'accept'
+      delete 'reject'
+    end
+  end
 
   get "up" => "rails/health#show", as: :rails_health_check
 end

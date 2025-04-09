@@ -4,6 +4,9 @@ class User < ApplicationRecord
   has_many :transactions, dependent: :destroy
   has_many :sent_transactions, class_name: "Transaction", foreign_key: "sender_id", dependent: :destroy
   has_many :received_transactions, class_name: "Transaction", foreign_key: "receiver_id", dependent: :destroy
+  
+  has_many :sent_requests, class_name: "Request", foreign_key: "requester_id", dependent: :destroy
+  has_many :received_requests, class_name: "Request", foreign_key: "recipient_id", dependent: :destroy
 
   validates :name, presence: true, length: { minimum: 2 }
   validates :email, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
