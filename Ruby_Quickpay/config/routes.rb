@@ -19,6 +19,14 @@ Rails.application.routes.draw do
   
   resources :payment_cards, only: %i[index show create update destroy]
 
+  resources :group_requests, only: [:create] do
+    member do
+      patch :pay
+      get :status
+    end
+  end
+  
+
   resources :requests, only: [:create] do
     member do
       patch 'accept'

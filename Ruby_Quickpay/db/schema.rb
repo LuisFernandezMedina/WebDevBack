@@ -10,9 +10,29 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_04_09_180910) do
+ActiveRecord::Schema[8.0].define(version: 2025_04_12_124603) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "group_request_participants", force: :cascade do |t|
+    t.bigint "group_request_id", null: false
+    t.bigint "participant_id", null: false
+    t.decimal "amount", null: false
+    t.boolean "paid", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["group_request_id"], name: "index_group_request_participants_on_group_request_id"
+    t.index ["participant_id"], name: "index_group_request_participants_on_participant_id"
+  end
+
+  create_table "group_requests", force: :cascade do |t|
+    t.bigint "creator_id", null: false
+    t.float "total_amount"
+    t.string "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["creator_id"], name: "index_group_requests_on_creator_id"
+  end
 
   create_table "payment_cards", force: :cascade do |t|
     t.string "card_number"
@@ -54,6 +74,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_09_180910) do
     t.index ["email"], name: "index_users_on_email", unique: true
   end
 
+  add_foreign_key "group_request_participants", "group_requests"
+  add_foreign_key "group_request_participants", "users", column: "participant_id"
+  add_foreign_key "group_requests", "users", column: "creator_id"
   add_foreign_key "transactions", "users", column: "receiver_id"
   add_foreign_key "transactions", "users", column: "sender_id"
 end

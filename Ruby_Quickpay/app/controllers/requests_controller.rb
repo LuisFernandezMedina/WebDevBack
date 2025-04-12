@@ -50,7 +50,6 @@ class RequestsController < ApplicationController
     render json: { message: "Solicitud aceptada y dinero enviado" }, status: :ok
   end
 
-  # ❌ Rechazar una solicitud
   def reject
     request = Request.find(params[:id])
 
@@ -67,13 +66,5 @@ class RequestsController < ApplicationController
   def request_params
     params.permit(:requester_id, :recipient_id, :amount)
   end
-
-  
-  private
-  
-  def request_params
-    params.permit(:requester_id, :recipient_id, :amount)
-  end
-
- 
 end
+  
