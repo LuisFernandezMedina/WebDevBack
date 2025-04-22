@@ -1,6 +1,7 @@
 class ApplicationController < ActionController::Base
   allow_browser versions: :modern
   before_action :authorize_request
+  attr_reader :current_user
 
   private
 
@@ -26,4 +27,9 @@ class ApplicationController < ActionController::Base
   rescue => e
     render json: { error: "Authorization error: #{e.message}" }, status: :unauthorized
   end
+
+  def authorize_admin
+    render json: { error: 'Unauthorized' }, status: :unauthorized unless @current_user&.admin?
+  end
+
 end

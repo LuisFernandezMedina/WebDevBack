@@ -34,5 +34,15 @@ Rails.application.routes.draw do
     end
   end
 
+  namespace :admin do
+    resources :users, only: [:index, :update, :destroy] do
+      member do
+        patch :modify_balance
+      end
+    end
+
+    resources :transactions, only: [:destroy]
+  end 
+
   get "up" => "rails/health#show", as: :rails_health_check
 end
