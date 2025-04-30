@@ -65,9 +65,20 @@ class UsersController < ApplicationController
     
     # GET /users/:id
     def show
-      render json: @current_user.slice(:id, :name, :email, :balance, :role)
+      if @current_user.admin?
+        user = User.find_by(id: params[:id])
+        if user
+          render json: user.slice(:id, :name, :email, :balance, :role)
+        else
+          render json: { error: 'Usuario no encontrado' }, status: :not_found
+        end
+      elsif @current_user.id.to_s == params[:id]
+        render json: @current_user.slice(:id, :name, :email, :balance, :role)
+      else
+        render json: { error: 'No autorizado' }, status: :unauthorized
+      end
     end
-  
+
     # PATCH/PUT /users/:id
     def update
       if @current_user.update(user_update_params)
