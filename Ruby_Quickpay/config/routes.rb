@@ -1,10 +1,18 @@
 Rails.application.routes.draw do
+  get "password_resets/create"
+  get "password_resets/validate"
+  get "password_resets/update"
   post '/signup', to: 'users#create'
   post '/login', to: 'users#login'
   post '/users/request_money', to: 'users#request_money'
   get '/profile', to: 'users#show'
   get 'users/email/:email', to: 'users#show_by_email'
   get '/users/:user_id/requests', to: 'requests#index'
+  # config/routes.rb
+  post "/password_resets", to: "password_resets#create"          # enviar email
+  get "/password_resets/validate", to: "password_resets#validate" # validar token
+  patch "/password_resets", to: "password_resets#update"          # actualizar contraseña
+
 
   resources :users, only: [:index, :show, :update, :destroy] do
     member do

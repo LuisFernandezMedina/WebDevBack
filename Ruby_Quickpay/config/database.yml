@@ -13,6 +13,7 @@ default: &default
   username: postgres
   password: <%= ENV["POSTGRES_PASSWORD"] || "Aa123456&" %>
   host: <%= ENV.fetch("DB_HOST") { "127.0.0.1" } %>
+
 development:
   <<: *default
   database: ruby_quickpay_development
