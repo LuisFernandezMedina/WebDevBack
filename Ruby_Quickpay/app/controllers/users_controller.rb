@@ -204,8 +204,49 @@ class UsersController < ApplicationController
       }
     end
     
+    # POST /users/:id/follow
+    def follow
+      user = User.find(params[:id]) # quien va a seguir
+      friend = User.find(params[:friend_id]) # a quién quiere seguir
 
+      # No puede seguirse a sí mismo
+      if user.id == friend.id
+        return render json: { error: "No puedes seguirte a ti mismo" }, status: :unprocessable_entity
+      end
 
+      # No puede seguir a un admin (suponiendo que los administradores tienen un campo booleano `admin`)
+      if friend.admin?
+        return render json: { error: "No puedes seguir a un administrador" }, status: :forbidden
+      end
+
+      # No puede seguir a alguien que ya sigue
+      if user.friend_ids.include?(friend.id)
+        return render json: { error: "Ya sigues a este usuario" }, status: :unprocessable_entity
+      end
+
+      # Si pasa todas las validaciones
+      user.follow(friend)
+      render json: { message: "#{friend.name} añadido como amigo" }, status: :ok
+    end
+
+    # DELETE /users/:id/unfollow
+    def unfollow
+      user = User.find(params[:id])
+      friend = User.find(params[:friend_id])
+
+      unless user.friend_ids.include?(friend.id)
+        return render json: { error: "Este usuario no está en tu lista de amigos" }, status: :unprocessable_entity
+      end
+
+      user.unfollow(friend)
+      render json: { message: "#{friend.name} eliminado de amigos" }, status: :ok
+    end
+
+    # GET /users/:id/friends
+    def friends
+      user = User.find(params[:id])
+      render json: user.friends.select(:id, :name, :email)
+    end
 
     private
   

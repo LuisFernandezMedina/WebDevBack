@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_04_12_124603) do
+ActiveRecord::Schema[8.0].define(version: 2025_05_05_195012) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -53,14 +53,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_12_124603) do
   end
 
   create_table "transactions", force: :cascade do |t|
-    t.bigint "sender_id", null: false
-    t.bigint "receiver_id", null: false
-    t.decimal "amount", precision: 10, scale: 2
-    t.datetime "date"
+    t.bigint "user_id", null: false
+    t.decimal "amount"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["receiver_id"], name: "index_transactions_on_receiver_id"
-    t.index ["sender_id"], name: "index_transactions_on_sender_id"
+    t.index ["user_id"], name: "index_transactions_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -71,12 +68,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_12_124603) do
     t.decimal "balance", default: "0.0", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "friend_ids", default: [], array: true
     t.index ["email"], name: "index_users_on_email", unique: true
   end
 
   add_foreign_key "group_request_participants", "group_requests"
   add_foreign_key "group_request_participants", "users", column: "participant_id"
   add_foreign_key "group_requests", "users", column: "creator_id"
-  add_foreign_key "transactions", "users", column: "receiver_id"
-  add_foreign_key "transactions", "users", column: "sender_id"
+  add_foreign_key "transactions", "users"
 end

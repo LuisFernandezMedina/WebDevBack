@@ -11,6 +11,9 @@ Rails.application.routes.draw do
       patch 'add_balance'
       patch 'retire_balance'
       get 'transactions'
+      post 'follow'
+      delete 'unfollow'
+      get 'friends'
     end
     collection do
       post 'transfer_money'

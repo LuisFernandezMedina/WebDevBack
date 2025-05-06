@@ -33,6 +33,18 @@ class User < ApplicationRecord
     self.role == ROLE_ADMIN
   end
 
+  def follow(user)
+    update(friend_ids: (friend_ids << user.id).uniq)
+  end
+
+  def unfollow(user)
+    update(friend_ids: friend_ids - [user.id])
+  end
+
+  def friends
+    User.where(id: friend_ids)
+  end
+
   private
 
   def downcase_email
