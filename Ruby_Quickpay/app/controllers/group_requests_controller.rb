@@ -2,7 +2,28 @@
 class GroupRequestsController < ApplicationController
   skip_before_action :verify_authenticity_token
   before_action :authorize_request
-
+  
+  def index
+    group_requests = GroupRequest.includes(:group_request_participants, :creator)
+                                 .select(:id, :description, :total_amount, :creator_id)
+    
+    render json: group_requests.map { |gr|
+      {
+        id: gr.id,
+        description: gr.description,
+        total_amount: gr.total_amount,
+        creator_name: gr.creator.name,
+        participants: gr.group_request_participants.map do |p|
+          {
+            id: p.participant_id,
+            amount: p.amount,
+            paid: p.paid
+          }
+        end
+      }
+    }
+  end
+  
   def create
     participants = params[:participants] # [{ id: 2, amount: 25 }, ...]
     total = params[:total_amount].to_f
@@ -94,4 +115,21 @@ class GroupRequestsController < ApplicationController
       end
     }
   end
+  # DELETE /group_requests/:id/leave
+  def leave
+    group_request = GroupRequest.find(params[:id])
+    participant = group_request.group_request_participants.find_by(participant_id: @current_user.id)
+
+    unless participant
+      return render json: { error: "No estás incluido en esta solicitud" }, status: :not_found
+    end
+
+    if participant.paid
+      return render json: { error: "Ya has pagado, no puedes abandonarla" }, status: :forbidden
+    end
+
+    participant.destroy
+    render json: { message: "Has rechazado la solicitud grupal" }, status: :ok
+  end
+
 end
